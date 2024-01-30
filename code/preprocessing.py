@@ -98,6 +98,10 @@ class Feature2id:
     def calc_represent_input_with_features(self) -> None:
         """
         initializes the matrices used in the optimization process - self.big_matrix and self.small_matrix
+        small_matrix - the i'th row is the feature representation of the i'th word.
+        big_matrix - in rows [|tags|*i, |tags|*(i+1)] (~+-1) we have the i'th word in the text with
+        every tag. Not completely true because some combinations of (word, tag) might not have passed
+        the threshold so they don't have features.
         """
         big_r = 0
         big_rows = []
