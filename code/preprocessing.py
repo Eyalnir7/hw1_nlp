@@ -21,6 +21,7 @@ class FeatureStatistics:
         '''
         self.tags = set()  # a set of all the seen tags
         self.tags.add("~")
+        self.tags.add("*")
         self.tags_counts = defaultdict(int)  # a dictionary with the number of times each tag appeared in the text
         self.words_count = defaultdict(int)  # a dictionary with the number of times each word appeared in the text
         self.histories = []  # a list of all the histories seen at the test
