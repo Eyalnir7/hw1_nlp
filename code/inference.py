@@ -23,49 +23,55 @@ def memm_viterbi(sentence, pre_trained_weights, feature2id):
     start_index = tag_to_index['*']
     probs_matrix[0][start_index][start_index] = 1
 
+    temp_array = np.zeros(len(tags))
     for i in range(1, n):
-        last_last_tags, last_tags = beam_search_args(probs_matrix[i - 1], 3)
+        pp_tags, p_tags = beam_search_args(probs_matrix[i - 1], 3)
         for last_tag in range(len(tags)):
             for curr_tag in range(len(tags)):
-                if last_tag in last_tags:
-                    prob, arg = calc_best_prob(last_last_tags, index_to_tag, tag_to_index, probs_matrix[i - 1],
+                if last_tag in p_tags:
+                    prob, arg = calc_best_prob(temp_array, tags, index_to_tag,
                                                sentence, pre_trained_weights, feature2id, i + 1, curr_tag, last_tag)
-                    probs_matrix[i][curr_tag][last_tag] = prob
-                    args_matrix[i][curr_tag][last_tag] = arg
+                    probs_matrix[i][last_tag][curr_tag] = prob
+                    args_matrix[i][last_tag][curr_tag] = arg
 
-    tags_index = []
-    for i in range(n - 1, 0, -1):
-        # Get the indices of the maximum value
-        max_index = np.argmax(probs_matrix[i])
+    pred_tags = []
+    # Get the indices of the maximum value
+    max_index = np.argmax(probs_matrix[n - 1])
+    # Convert the flattened index to 2D indices
+    max_indices = np.unravel_index(max_index, probs_matrix[n - 1].shape)
+    curr_tag = max_indices[1]
+    p_tag = max_indices[0]
+    pred_tags.append(index_to_tag[curr_tag])
+    pred_tags.append(index_to_tag[p_tag])
 
-        # Convert the flattened index to 2D indices
-        max_indices = np.unravel_index(max_index, probs_matrix[i].shape)
-        if i == n - 1:
-            tags_index.append(max_indices[1])
-            tags_index.append(max_indices[0])
+    for i in range(n - 2, 2, -1):
+        temp = args_matrix[i][p_tag][curr_tag]
+        pred_tags.append(index_to_tag[temp])
+        curr_tag = p_tag
+        p_tag = temp
 
-        max_arg = args_matrix[i][max_indices]
-        tags_index.append(max_arg)
-
-    return tags_index[::-1]
+    return pred_tags[::-1]
 
 
-def calc_best_prob(last_last_tags, index_to_tag, tag_to_index, probs_matrix, sentence, pre_trained_weights, feature2id,
+def calc_best_prob(temp_array, tags, index_to_tag, sentence, pre_trained_weights, feature2id,
                    i, curr_tag, last_tag):
     best_prob = 0
-    best_arg = None
-    for tag in last_last_tags:
+    best_arg = 0
+
+    for tag in range(len(tags)):
         prob = 0
         history = (sentence[i], index_to_tag[curr_tag], sentence[i - 1], index_to_tag[last_tag], sentence[i - 2],
                    index_to_tag[tag], sentence[i + 1])
         features_representation = np.array(
             represent_input_with_features(history, feature2id.feature_to_idx))
         if len(features_representation) > 0:
-            prob = np.sum(np.array([pre_trained_weights[feature] for feature in features_representation]))
-            prob = probs_matrix[tag][last_tag] * prob
+            prob = np.exp(np.sum(np.array([pre_trained_weights[feature] for feature in features_representation])))
         if prob > best_prob:
             best_prob = prob
             best_arg = tag
+        temp_array[tag] = prob
+
+    best_prob = best_prob/np.sum(temp_array)
 
     return best_prob, best_arg
 

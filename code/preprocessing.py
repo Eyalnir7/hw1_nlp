@@ -82,19 +82,19 @@ class FeatureStatistics:
                     else:
                         self.feature_rep_dict["f105"][(cur_tag)] += 1
 
-                # f106, f107
-                if word_idx >= 1:
-                    if (p_word, cur_tag) not in self.feature_rep_dict["f106"]:
-                        self.feature_rep_dict["f106"][(p_word, cur_tag)] = 1
-                    else:
-                        self.feature_rep_dict["f106"][(p_word, cur_tag)] += 1
+                    # f106, f107
+                    if word_idx >= 1:
+                        if (p_word, cur_tag) not in self.feature_rep_dict["f106"]:
+                            self.feature_rep_dict["f106"][(p_word, cur_tag)] = 1
+                        else:
+                            self.feature_rep_dict["f106"][(p_word, cur_tag)] += 1
 
-                if word_idx < len(split_words)-1:
-                    next_word, _ = split_words[word_idx + 1].split('_')
-                    if (next_word, cur_tag) not in self.feature_rep_dict["f107"]:
-                        self.feature_rep_dict["f107"][(next_word, cur_tag)] = 1
-                    else:
-                        self.feature_rep_dict["f107"][(next_word, cur_tag)] += 1
+                    if word_idx < (len(split_words) - 1):
+                        next_word, _ = split_words[word_idx + 1].split('_')
+                        if (next_word, cur_tag) not in self.feature_rep_dict["f107"]:
+                            self.feature_rep_dict["f107"][(next_word, cur_tag)] = 1
+                        else:
+                            self.feature_rep_dict["f107"][(next_word, cur_tag)] += 1
 
                 sentence = [("*", "*"), ("*", "*")]
                 for pair in split_words:
@@ -220,8 +220,11 @@ def represent_input_with_features(history: Tuple, dict_of_dicts: Dict[str, Dict[
     """
     c_word = history[0]
     c_tag = history[1]
-    p_tag = history[4]
-    pp_tag = history[6]
+    p_word = history[2]
+    p_tag = history[3]
+    pp_word = history[4]
+    pp_tag = history[5]
+    n_word = history[6]
     features = []
 
     # f100
@@ -243,6 +246,12 @@ def represent_input_with_features(history: Tuple, dict_of_dicts: Dict[str, Dict[
         features.append(dict_of_dicts["f104"][(p_tag, c_tag)])
     if (c_tag) in dict_of_dicts["f105"]:
         features.append(dict_of_dicts["f105"][(c_tag)])
+
+    # f106, f107
+    if (p_word, c_tag) in dict_of_dicts["f106"]:
+        features.append(dict_of_dicts["f106"][(p_word, c_tag)])
+    if (n_word, c_tag) in dict_of_dicts["f107"]:
+        features.append(dict_of_dicts["f107"][(n_word, c_tag)])
 
     return features
 

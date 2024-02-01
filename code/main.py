@@ -5,7 +5,7 @@ from inference import tag_all_test
 
 
 def main():
-    threshold = 1
+    threshold = 10
     lam = 1
 
     train_path = "data/train1.wtag"
