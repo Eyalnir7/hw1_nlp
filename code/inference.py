@@ -44,7 +44,7 @@ def memm_viterbi(sentence, pre_trained_weights, feature2id):
     pred_tags.append(index_to_tag[curr_tag])
     pred_tags.append(index_to_tag[p_tag])
 
-    for i in range(n - 2, 2, -1):
+    for i in range(n - 1, 2, -1):
         temp = args_matrix[i][p_tag][curr_tag]
         pred_tags.append(index_to_tag[temp])
         curr_tag = p_tag
@@ -71,7 +71,8 @@ def calc_best_prob(temp_array, tags, index_to_tag, sentence, pre_trained_weights
             best_arg = tag
         temp_array[tag] = prob
 
-    best_prob = best_prob/np.sum(temp_array)
+    if best_prob != 0:
+        best_prob = best_prob/np.sum(temp_array)
 
     return best_prob, best_arg
 
