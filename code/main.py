@@ -5,11 +5,12 @@ from inference import tag_all_test
 
 
 def main():
-    threshold = 10
-    lam = 1
+    threshold = 7
+    lam = 0.4
 
     train_path = "data/train1.wtag"
     test_path = "data/comp1.words"
+    test_path = "data/test1.wtag"
 
     weights_path = 'weights.pkl'
     predictions_path = 'predictions.wtag'
