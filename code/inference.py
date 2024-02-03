@@ -19,7 +19,7 @@ def memm_viterbi(sentence, pre_trained_weights, feature2id):
 
     # Create an array with each entry as a zero matrix of size len(tags) x len(tags)
     probs_matrix = np.zeros((n, len(tags), len(tags)), dtype=float)
-    args_matrix = np.zeros((n, len(tags), len(tags)), dtype=str)
+    args_matrix = np.zeros((n, len(tags), len(tags)), dtype=int)
     start_index = tag_to_index['*']
     probs_matrix[0][start_index][start_index] = 1
 

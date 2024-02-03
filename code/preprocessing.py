@@ -34,6 +34,7 @@ class FeatureStatistics:
         """
         with open(file_path) as file:
             for line in file:
+                line = "*_* *_* " + line
                 if line[-1:] == "\n":
                     line = line[:-1]
                 split_words = line.split(' ')
@@ -96,7 +97,8 @@ class FeatureStatistics:
                         else:
                             self.feature_rep_dict["f107"][(next_word, cur_tag)] += 1
 
-                sentence = [("*", "*"), ("*", "*")]
+                # sentence = [("*", "*"), ("*", "*")]
+                sentence = []  # * already added
                 for pair in split_words:
                     sentence.append(tuple(pair.split("_")))
                 sentence.append(("~", "~"))
@@ -161,10 +163,6 @@ class Feature2id:
         Assigns each feature that appeared enough time in the train files an idx.
         Saves those indices to self.feature_to_idx
         """
-        ###
-        self.feature_to_idx["f100"][('*', '*')] = self.n_total_features
-        self.n_total_features += 1
-        ###
         for feat_class in self.feature_statistics.feature_rep_dict:
             if feat_class not in self.feature_to_idx:
                 continue
