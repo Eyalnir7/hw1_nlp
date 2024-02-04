@@ -13,7 +13,7 @@ class FeatureStatistics:
 
         # Init all features dictionaries
         feature_dict_list = ["f100", "f101", "f102", "f103", "f104", "f105", "f106",
-                             "f107", "f108", "f109"]  # the feature classes used in the code
+                             "f107", "f108", "f109", "f110", "f111"]  # the feature classes used in the code
         self.feature_rep_dict = {fd: OrderedDict() for fd in feature_dict_list}
         '''
         A dictionary containing the counts of each data regarding a feature class. For example in f100, would contain
@@ -116,8 +116,19 @@ class FeatureStatistics:
                     else:
                         self.feature_rep_dict["f109"][(type_word, cur_tag)] += 1
 
+                    # f 110, 111 - give more wight to p_word and pp_word
+                    if word_idx >= 2:
+                        pp_word, pp_tag = split_words[word_idx - 2].split('_')
+                        if (pp_word, pp_tag) not in self.feature_rep_dict["f110"]:
+                            self.feature_rep_dict["f110"][(pp_word, pp_tag)] = 1
+                        else:
+                            self.feature_rep_dict["f110"][(pp_word, pp_tag)] += 1
 
-
+                    if word_idx >= 1:
+                        if (p_word, p_tag) not in self.feature_rep_dict["f111"]:
+                            self.feature_rep_dict["f111"][(p_word, p_tag)] = 1
+                        else:
+                            self.feature_rep_dict["f111"][(p_word, p_tag)] += 1
 
                 sentence = [("*", "*"), ("*", "*")]
                 # sentence = []  # * already added
@@ -142,6 +153,7 @@ def number_or_word(word):
         return 3
     else:
         return 0
+
 
 def get_prefix_suffix_list(word):
     # if the word is of length n don't give prefix or suffix of length n
@@ -186,6 +198,8 @@ class Feature2id:
             "f107": OrderedDict(),
             "f108": OrderedDict(),
             "f109": OrderedDict(),
+            "f110": OrderedDict(),
+            "f111": OrderedDict(),
         }
         self.represent_input_with_features = OrderedDict()
         self.histories_matrix = OrderedDict()
@@ -298,6 +312,12 @@ def represent_input_with_features(history: Tuple, dict_of_dicts: Dict[str, Dict[
     type_word = str(number_or_word(c_word))
     if (type_word, c_tag) in dict_of_dicts["f109"]:
         features.append(dict_of_dicts["f109"][(type_word, c_tag)])
+
+    # # f110, f111
+    # if (pp_word,pp_tag) in dict_of_dicts["f110"]:
+    #     features.append(dict_of_dicts["f110"][(pp_word,pp_tag)])
+    # if (p_word,p_tag) in dict_of_dicts["f111"]:
+    #     features.append(dict_of_dicts["f111"][(p_word,p_tag)])
 
     return features
 

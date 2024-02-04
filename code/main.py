@@ -5,8 +5,8 @@ from inference import tag_all_test
 
 
 def main():
-    threshold = 7
-    lam = 0.4
+    threshold = 8
+    lam = 1
 
     train_path = "data/train1.wtag"
     test_path = "data/comp1.words"

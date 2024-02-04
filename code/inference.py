@@ -25,11 +25,11 @@ def memm_viterbi(sentence, pre_trained_weights, feature2id):
     probs_matrix[0][start_index][start_index] = 0
 
     for i in range(1, n):
-        pp_tags, p_tags = beam_search_args(i, start_index, probs_matrix[i - 1], 30)
+        pp_tags, p_tags = beam_search_args(i, start_index, probs_matrix[i - 1], 3)
         for last_tag in range(len(tags)):
             for curr_tag in range(len(tags)):
                 if last_tag in p_tags:
-                    prob, arg = calc_best_prob(start_index,probs_matrix[i-1], tags, index_to_tag,
+                    prob, arg = calc_best_prob(pp_tags, start_index,probs_matrix[i-1], tags, index_to_tag,
                                                sentence, pre_trained_weights, feature2id, i + 1, curr_tag, last_tag)
                     probs_matrix[i][last_tag][curr_tag] = prob
                     args_matrix[i][last_tag][curr_tag] = arg
@@ -53,6 +53,35 @@ def memm_viterbi(sentence, pre_trained_weights, feature2id):
     return pred_tags[::-1]
 
 
+def calc_best_prob(pp_tags, start_index, prev_mat, tags, index_to_tag, sentence, pre_trained_weights, feature2id,
+                   i, curr_tag, last_tag):
+
+    if i == 2 or i == 3:
+        possible_tags = [start_index]
+    else:
+        possible_tags = pp_tags
+
+    temp_array = np.zeros(len(tags))
+    best_prob = -np.inf
+    best_arg = 0
+
+    for tag in possible_tags:
+        history = (sentence[i], index_to_tag[curr_tag], sentence[i - 1], index_to_tag[last_tag], sentence[i - 2],
+                   index_to_tag[tag], sentence[i + 1])
+        features_representation = represent_input_with_features(history, feature2id.feature_to_idx)
+        prob = np.exp(np.sum(np.array([pre_trained_weights[feature] for feature in features_representation])))
+        temp_array[tag] = prob
+        if prev_mat[tag][last_tag] == -np.inf:
+            continue
+        prob = np.log(prob) + prev_mat[tag][last_tag]
+        if prob > best_prob:
+            best_prob = prob
+            best_arg = tag
+
+        best_prob = best_prob - np.log(np.sum(temp_array))
+
+    return best_prob, best_arg
+
 # def calc_best_prob(prev_mat, tags, index_to_tag, sentence, pre_trained_weights, feature2id,
 #                    i, curr_tag, last_tag):
 #     temp_array = np.ones(len(tags))
@@ -75,36 +104,6 @@ def memm_viterbi(sentence, pre_trained_weights, feature2id):
 #         best_prob = best_prob - np.log(np.sum(temp_array))
 #
 #     return best_prob, best_arg
-
-
-####
-def calc_best_prob(start_index, prev_mat, tags, index_to_tag, sentence, pre_trained_weights, feature2id,
-                   i, curr_tag, last_tag):
-    temp_array = np.ones(len(tags))
-    best_prob = -np.inf
-    best_arg = 0
-
-    if i == 2 or i == 3:
-        possible_tags = [start_index]
-    else:
-        possible_tags = range(len(tags))
-
-    for tag in possible_tags:
-        history = (sentence[i], index_to_tag[curr_tag], sentence[i - 1], index_to_tag[last_tag], sentence[i - 2],
-                   index_to_tag[tag], sentence[i + 1])
-        features_representation = represent_input_with_features(history, feature2id.feature_to_idx)
-        prob = np.exp(np.sum(np.array([pre_trained_weights[feature] for feature in features_representation])))
-        temp_array[tag] = prob
-        if prev_mat[tag][last_tag] == -np.inf:
-            continue
-        prob = np.log(prob) + prev_mat[tag][last_tag]
-        if prob > best_prob:
-            best_prob = prob
-            best_arg = tag
-
-        best_prob = best_prob - np.log(np.sum(temp_array))
-
-    return best_prob, best_arg
 
 
 def beam_search_args(i, start_index, probs_matrix, b):
